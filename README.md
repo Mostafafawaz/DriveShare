@@ -53,35 +53,35 @@ Security question answers for the renter account: `milo` / `chicago` / `jones`
 
 This project uses six GoF design patterns:
 
-### 1. Singleton — SessionManager
+### 1. Singleton SessionManager
 Only one user can be logged in at a time. `SessionManager.get_instance()`
 always returns the same object. The `_instance` class variable and `__new__`
 enforce the single-instance constraint.
 
-### 2. Observer — Car Watch Notifications
+### 2. Observer Car Watch Notifications
 `CarListing` is the Subject. When a renter clicks "Watch," a `RenterWatcher`
 (ConcreteObserver) is registered with `register_observer()`. When the owner
 changes availability or lowers the price, `notify_observers()` is called,
 which calls `update()` on every registered observer. Notifications appear
 in the renter's notification inbox.
 
-### 3. Mediator — Screen Navigation
+### 3. Mediator Screen Navigation
 `AppMediator` is the ConcreteMediator. All 10 UI frames are Colleagues.
 No frame creates or imports another frame. Every navigation event goes
 through `self.mediator.notify(self, "show_X")` and the mediator handles it.
 
-### 4. Builder — Car Listing Creation
+### 4. Builder Car Listing Creation
 `AddCarFrame._save()` acts as the Director. It calls setter methods on
 `CarListingBuilder` (ConcreteBuilder) one at a time, then calls `build()`
 to get the finished `CarListing` (Product).
 
-### 5. Proxy — Payment Validation
+### 5. Proxy Payment Validation
 `PaymentProxy` sits between the booking screen and `RealPaymentService`.
 It validates the payment amount, checks that the renter is not booking
 their own car, and checks the renter's balance before forwarding to the
 real service.
 
-### 6. Chain of Responsibility — Password Recovery
+### 6. Chain of Responsibility Password Recovery
 Three security question handlers (`Q1Handler`, `Q2Handler`, `Q3Handler`)
 are chained together. All three answers must be correct to reset the password.
 A wrong answer stops the chain and returns an error.
