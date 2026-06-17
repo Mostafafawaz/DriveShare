@@ -1,6 +1,6 @@
-# DriveShare — Peer-to-Peer Car Rental Platform
+# DriveShare Peer-to-Peer Car Rental Platform
 
-**CIS 476 – Software Architecture and Design Patterns**
+**CIS 566 Software Architecture and Design Patterns**
 **Student:** Mostafa Mohamed
 **University of Michigan – Dearborn**
 

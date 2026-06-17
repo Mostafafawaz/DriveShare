@@ -1,6 +1,6 @@
 """
-CIS 476 - Software Architecture and Design Patterns
-Term Project - DriveShare: Peer-to-Peer Car Rental Platform
+CIS 566 Software Architecture and Design Patterns
+Term Project DriveShare: Peer-to-Peer Car Rental Platform
 Student: Mostafa Mohamed
 
 This program is a car rental platform where car owners can list
@@ -461,28 +461,42 @@ AMBER     = "#e65100"
 RED_FG    = "#c62828"
 
 
+def _btn(parent, text, command, bg=NAV_BG, fg=WHITE,
+         font=("Arial", 11, "bold"), padx=12, pady=8, width=0, **kw):
+    """
+    Colored button using tk.Label + click binding.
+    tk.Button ignores bg/fg on macOS Python 3.13; Label does not.
+    """
+    cfg = dict(bg=bg, fg=fg, font=font, cursor="hand2",
+               padx=padx, pady=pady, relief="flat")
+    if width:
+        cfg["width"] = width
+    cfg.update(kw)
+    lbl = tk.Label(parent, text=text, **cfg)
+    lbl.bind("<Button-1>", lambda e: command())
+    lbl.bind("<Enter>",    lambda e: lbl.config(relief="sunken"))
+    lbl.bind("<Leave>",    lambda e: lbl.config(relief="flat"))
+    return lbl
+
+
 def _nav_btn(parent, text, command, side="right"):
-    """Small white button for nav bars."""
-    b = tk.Button(parent, text=text, font=("Arial", 10, "bold"),
-                  bg=NAV_DARK, fg=WHITE, bd=0, padx=12, pady=6,
-                  relief="flat", cursor="hand2", command=command)
+    """Small nav-bar button."""
+    b = _btn(parent, text, command, bg=NAV_DARK, fg=WHITE,
+             font=("Arial", 10, "bold"), padx=12, pady=6)
     b.pack(side=side, padx=6, pady=8)
     return b
 
 
 def _big_btn(parent, text, command, bg=NAV_BG, fg=WHITE, width=22):
     """Large primary action button."""
-    return tk.Button(parent, text=text, font=("Arial", 12, "bold"),
-                     bg=bg, fg=fg, bd=0, padx=16, pady=10,
-                     width=width, relief="flat", cursor="hand2",
-                     command=command)
+    return _btn(parent, text, command, bg=bg, fg=fg,
+                font=("Arial", 12, "bold"), padx=16, pady=10, width=width)
 
 
 def _link_btn(parent, text, command):
     """Flat text link button."""
-    return tk.Button(parent, text=text, font=("Arial", 11),
-                     bg=BG, fg=NAV_BG, bd=0, padx=8, pady=6,
-                     relief="flat", cursor="hand2", command=command)
+    return _btn(parent, text, command, bg=BG, fg=NAV_BG,
+                font=("Arial", 11), padx=8, pady=6)
 
 
 def _scrollable(parent, bg=BG):
@@ -891,10 +905,9 @@ class OwnerDashFrame(BaseFrame):
                 c.set_available(not c.available)
                 self.on_show()
 
-            tk.Button(btn_col, text=avail_label,
-                      font=("Arial", 10), bg=avail_bg, fg=WHITE,
-                      bd=0, padx=10, pady=6, cursor="hand2",
-                      command=toggle_avail).pack(fill="x", pady=3)
+            _btn(btn_col, avail_label, toggle_avail,
+                 bg=avail_bg, font=("Arial", 10), padx=10, pady=6).pack(
+                fill="x", pady=3)
 
             def drop_price(c=car):
                 # Lower price by $5 - also fires Observer notify_observers()
@@ -902,10 +915,9 @@ class OwnerDashFrame(BaseFrame):
                     c.set_price(c.price_per_day - 5)
                     self.on_show()
 
-            tk.Button(btn_col, text="Lower Price  -$5",
-                      font=("Arial", 10), bg=AMBER, fg=WHITE,
-                      bd=0, padx=10, pady=6, cursor="hand2",
-                      command=drop_price).pack(fill="x", pady=3)
+            _btn(btn_col, "Lower Price  -$5", drop_price,
+                 bg=AMBER, font=("Arial", 10), padx=10, pady=6).pack(
+                fill="x", pady=3)
 
     def _logout(self):
         SessionManager.get_instance().logout()
@@ -1044,14 +1056,12 @@ class RenterDashFrame(BaseFrame):
         tk.Entry(search_bar, textvariable=self.search_var,
                  font=("Arial", 11), width=22,
                  relief="solid", bd=1).pack(side="left", padx=4, pady=8, ipady=4)
-        tk.Button(search_bar, text="Search",
-                  font=("Arial", 11), bg=NAV_BG, fg=WHITE, bd=0,
-                  padx=12, pady=4, cursor="hand2",
-                  command=self.on_show).pack(side="left", padx=6, pady=8)
-        tk.Button(search_bar, text="Clear",
-                  font=("Arial", 11), bg=BG, fg=NAV_BG, bd=0,
-                  padx=8, pady=4, cursor="hand2",
-                  command=lambda: [self.search_var.set(""), self.on_show()]).pack(
+        _btn(search_bar, "Search", self.on_show,
+             bg=NAV_BG, font=("Arial", 11), padx=12, pady=4).pack(
+            side="left", padx=6, pady=8)
+        _btn(search_bar, "Clear",
+             lambda: [self.search_var.set(""), self.on_show()],
+             bg=BG, fg=NAV_BG, font=("Arial", 11), padx=8, pady=4).pack(
             side="left", padx=2)
 
         tk.Label(self, text="Available Cars", font=("Arial", 12, "bold"),
@@ -1103,24 +1113,23 @@ class RenterDashFrame(BaseFrame):
             btn_col.pack(side="right", padx=12, pady=4)
 
             if car.available and (not car.owner or car.owner.email != user.email):
-                tk.Button(btn_col, text="Book Now",
-                          font=("Arial", 10, "bold"), bg=GREEN, fg=WHITE,
-                          bd=0, padx=12, pady=6, cursor="hand2",
-                          command=lambda c=car: self.mediator.notify(
-                              self, "show_book_car", c)).pack(fill="x", pady=3)
+                _btn(btn_col, "Book Now",
+                     lambda c=car: self.mediator.notify(self, "show_book_car", c),
+                     bg=GREEN, font=("Arial", 10, "bold"),
+                     padx=12, pady=6).pack(fill="x", pady=3)
 
             # Watch - registers an Observer on this car (Pattern 2)
-            tk.Button(btn_col, text="Watch",
-                      font=("Arial", 10), bg=AMBER, fg=WHITE,
-                      bd=0, padx=12, pady=6, cursor="hand2",
-                      command=lambda c=car: self._watch(c)).pack(fill="x", pady=3)
+            _btn(btn_col, "Watch",
+                 lambda c=car: self._watch(c),
+                 bg=AMBER, font=("Arial", 10),
+                 padx=12, pady=6).pack(fill="x", pady=3)
 
             if car.owner and car.owner.email != user.email:
-                tk.Button(btn_col, text="Message Owner",
-                          font=("Arial", 10), bg="#546e7a", fg=WHITE,
-                          bd=0, padx=12, pady=6, cursor="hand2",
-                          command=lambda c=car: self.mediator.notify(
-                              self, "show_messages", c.owner.email)).pack(fill="x", pady=3)
+                _btn(btn_col, "Message Owner",
+                     lambda c=car: self.mediator.notify(
+                         self, "show_messages", c.owner.email),
+                     bg="#546e7a", font=("Arial", 10),
+                     padx=12, pady=6).pack(fill="x", pady=3)
 
     def _watch(self, car):
         user = SessionManager.get_instance().get_current_user()
@@ -1275,9 +1284,9 @@ class MessagesFrame(BaseFrame):
         tk.Entry(to_bar, textvariable=self.to_var,
                  font=("Arial", 11), width=30,
                  relief="solid", bd=1).pack(side="left", padx=8, pady=10, ipady=4)
-        tk.Button(to_bar, text="Refresh",
-                  font=("Arial", 10), bg=BG, fg=NAV_BG, bd=0, padx=10,
-                  cursor="hand2", command=self._refresh).pack(side="left", padx=4)
+        _btn(to_bar, "Refresh", self._refresh,
+             bg=BG, fg=NAV_BG, font=("Arial", 10),
+             padx=10, pady=4).pack(side="left", padx=4)
 
         # Message inbox
         self.inbox = scrolledtext.ScrolledText(
@@ -1292,10 +1301,9 @@ class MessagesFrame(BaseFrame):
         self.entry = tk.Entry(compose, font=("Arial", 11),
                               relief="solid", bd=1)
         self.entry.pack(side="left", fill="x", expand=True, ipady=6, padx=(0, 8))
-        tk.Button(compose, text="Send",
-                  font=("Arial", 11, "bold"), bg=NAV_BG, fg=WHITE,
-                  bd=0, padx=18, pady=6, cursor="hand2",
-                  command=self._send).pack(side="left")
+        _btn(compose, "Send", self._send,
+             bg=NAV_BG, font=("Arial", 11, "bold"),
+             padx=18, pady=6).pack(side="left")
 
     def on_show(self):
         self._refresh()
@@ -1472,6 +1480,20 @@ def main():
     root.minsize(860, 620)
     root.configure(bg=BG)
     root.resizable(True, True)
+
+    # Fix for macOS: window may appear but not accept clicks until focused.
+    # lift() brings it to the front; the after() call forces focus once idle.
+    root.lift()
+    root.attributes("-topmost", True)
+    root.after(200, lambda: [root.attributes("-topmost", False), root.focus_force()])
+
+    # Show hidden exceptions in a popup instead of silently swallowing them.
+    def _show_error(exc_type, exc_val, exc_tb):
+        import traceback
+        msg = "".join(traceback.format_exception(exc_type, exc_val, exc_tb))
+        print(msg)   # still print to terminal
+        messagebox.showerror("Unexpected Error", msg[:800])
+    root.report_callback_exception = _show_error
 
     mediator = AppMediator(root)
 
